@@ -6,45 +6,29 @@
     <title>Login</title>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
- 
+
   <body>
     <main id="main-holder">
       <a href="/logout" id="logout">Logout</a>
- 
+
       <h1 id="login-header">Login</h1>
- 
+
       <div id="login-error-msg-holder">
         <p id="login-error-msg">
           Invalid username
           <span id="error-msg-second-line">and/or password</span>
         </p>
       </div>
- 
-      <form id="login-form" action="/api/login" method="post">
-        <input
-          type="text"
-          name="username"
-          id="username-field"
-          class="login-form-field"
-          placeholder="Username"
-        />
-        <input
-          type="password"
-          name="password"
-          id="password-field"
-          class="login-form-field"
-          placeholder="Password"
-        />
-        <input type="submit" value="Login" id="login-form-submit" />
-      </form>
+
+      <button id="login-form-submit">Login</button>
     </main>
   </body>
- 
+
   <style>
     html {
       height: 100%;
     }
- 
+
     body {
       height: 100%;
       margin: 0;
@@ -54,11 +38,11 @@
       align-items: center;
       background-color: #3a3a3a;
     }
- 
+
     #logout {
       opacity: 0;
     }
- 
+
     #main-holder {
       width: 50%;
       height: 70%;
@@ -69,7 +53,7 @@
       border-radius: 7px;
       box-shadow: 0px 0px 5px 2px black;
     }
- 
+
     #login-error-msg-holder {
       width: 100%;
       height: 100%;
@@ -77,7 +61,7 @@
       justify-items: center;
       align-items: center;
     }
- 
+
     #login-error-msg {
       width: 23%;
       text-align: center;
@@ -90,22 +74,22 @@
       background-color: #e58f8f;
       opacity: 0;
     }
- 
+
     #error-msg-second-line {
       display: block;
     }
- 
+
     #login-form {
       align-self: flex-start;
       display: grid;
       justify-items: center;
       align-items: center;
     }
- 
+
     .login-form-field::placeholder {
       color: #3a3a3a;
     }
- 
+
     .login-form-field {
       border: none;
       border-bottom: 1px solid #3a3a3a;
@@ -114,9 +98,9 @@
       outline: none;
       padding: 0px 0px 5px 5px;
     }
- 
+
     #login-form-submit {
-      width: 100%;
+      width: 50%;
       padding: 7px;
       border: none;
       border-radius: 5px;
@@ -127,10 +111,10 @@
       outline: none;
     }
   </style>
- 
+
   <script>
     const access_token = sessionStorage.getItem("access_token");
- 
+
     if (access_token) {
       axios
         .get("/", {
@@ -143,50 +127,31 @@
           if (username) {
             const mainHolder = document.getElementById("main-holder");
             const loginHeader = document.getElementById("login-header");
- 
-            loginForm.remove();
-            loginErrorMsg.remove();
+
+            loginButton.remove();
             loginHeader.remove();
- 
+
             mainHolder.append(`Hello ${username}`);
             logoutLink.style.opacity = 1;
           }
         });
     }
- 
+
     const loginForm = document.getElementById("login-form");
     const loginButton = document.getElementById("login-form-submit");
     const loginErrorMsg = document.getElementById("login-error-msg");
     const logoutLink = document.getElementById("logout");
- 
+
     logoutLink.addEventListener("click", (e) => {
       e.preventDefault();
       sessionStorage.removeItem("access_token");
       location.reload();
     });
- 
+
     loginButton.addEventListener("click", (e) => {
       e.preventDefault();
-      const username = loginForm.username.value;
-      const password = loginForm.password.value;
- 
-      axios({
-        method: "post",
-        url: "/api/login",
-        data: {
-          username,
-          password,
-        },
-      })
-        .then((response) => {
-          sessionStorage.setItem("access_token", response.data.access_token);
-          location.reload();
-        })
-        .catch((response) => {
-          loginErrorMsg.style.opacity = 1;
-          sessionStorage.removeItem("access_token");
-        });
+      window.location.href =
+        "https://kpi.eu.auth0.com/authorize?client_id=JIvCO5c2IBHlAe2patn6l6q5H35qxti0&redirect_uri=http%3A%2F%2Flocalhost%3A3000&response_type=code&scope=offline_access%20read:users%20read:current_user%20read:user_idp_tokens&audience=https://kpi.eu.auth0.com/api/v2/";
     });
   </script>
 </html>
- 
