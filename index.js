@@ -6,23 +6,24 @@ const dotenv = require("dotenv");
 const port = 3000;
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
- 
+const fs = require("fs");
+
 dotenv.config();
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
- 
+
 app.get("/", verifyToken, (req, res) => {
   res.json({
     username: req.user,
     logout: "http://localhost:3000/logout",
   });
 });
- 
+
 app.get("/logout", (req, res) => {
   res.redirect("/");
 });
- 
+
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -54,30 +55,41 @@ app.post("/api/login", async (req, res) => {
     res.status(401).json({ error: error.response?.data });
   }
 });
- 
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
- 
+
 async function verifyToken(req, res, next) {
   const token = req.header("Authorization");
   if (!token) {
     return res.sendFile(path.join(__dirname + "/index.html"));
   }
- 
-  decoded = jwt.decode(token);
- 
-  if (!decoded) {
-    return res.sendFile(path.join(__dirname + "/index.html"));
+
+  try {
+    const privateKey = fs.readFileSync("app_key.pem", "utf8");
+    jwt.verify(
+      token,
+      privateKey,
+      { algorithms: ["RS256"] },
+      async (err, decoded) => {
+        if (err) {
+          return res.sendFile(path.join(__dirname + "/index.html"));
+        }
+        const response = await axios.get(
+          `${process.env.AUDIENCE_URL}users/${decoded.sub}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        req.user = response.data.name;
+        next();
+      }
+    );
+  } catch (error) {
+    console.error("App key file error:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-  const response = await axios.get(
-    `${process.env.AUDIENCE_URL}users/${decoded.sub}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  req.user = response.data.name;
-  next();
 }
